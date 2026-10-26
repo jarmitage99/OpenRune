@@ -1,0 +1,37 @@
+name: Release
+on:
+  push:
+    tags: ['v*', '[0-9]*']
+
+jobs:
+  linux:
+    uses: ./.github/workflows/linux.yaml
+  windows:
+    uses: ./.github/workflows/windows.yaml
+
+  release:
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Package archives
+        run: |
+          tag="${GITHUB_REF_NAME}"
+
+          chmod +x rune-linux-ubuntu/* rune-linux-fedora/*
+          tar -czf "rune-linux-ubuntu-${tag}.tar.gz" -C rune-linux-ubuntu .
+          tar -czf "rune-linux-fedora-${tag}.tar.gz" -C rune-linux-fedora .
+          (cd rune-windows-mingw && zip -r "../rune-windows-${tag}.zip" .)
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            rune-linux-ubuntu-*.tar.gz
+            rune-linux-fedora-*.tar.gz
+            rune-windows-*.zip

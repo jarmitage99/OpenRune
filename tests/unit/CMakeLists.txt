@@ -1,0 +1,6 @@
+file(GLOB UNIT_TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+add_executable(unit-tests ${UNIT_TEST_SOURCES} ${CMAKE_SOURCE_DIR}/src/game/video.cc)
+target_link_libraries(unit-tests PRIVATE rune-render rune-compiler Catch2)
+target_compile_definitions(unit-tests PRIVATE RUNE_GAME_DATA="${RUNE_GAME_DATA}" RUNE_SOURCE_DIR="${CMAKE_SOURCE_DIR}" UCC_PATH="$<TARGET_FILE:ucc>")
+add_dependencies(unit-tests ucc)
+add_test(NAME unit-tests COMMAND unit-tests)
